@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.claude/
+packages/server/uploads/*
+!packages/server/uploads/.gitkeep
+packages/server/prisma/dev.db
+packages/server/prisma/dev.db-journal
+.env
+!.env.example
+*.log
+.DS_Store

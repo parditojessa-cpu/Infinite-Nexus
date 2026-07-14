@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #f5f3ee;
+  --color-surface: #ffffff;
+  --color-primary: #0f4c81;
+  --color-accent: #2ba39c;
+  --color-text-primary: #1a2430;
+  --color-text-secondary: rgba(26, 36, 48, 0.6);
+  --color-border: rgba(26, 36, 48, 0.08);
+  --color-border-strong: rgba(26, 36, 48, 0.15);
+  --color-success: #2f6f4f;
+  --color-warning: #c98a1e;
+  --color-danger: #c1443b;
+  --color-info: #8b5cf6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: "Public Sans", sans-serif;
+  font-size: 14px;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-heading {
+  font-family: "Manrope", sans-serif;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+  border-radius: 9px;
+  padding: 10px 16px;
+  font-weight: 600;
+  transition: opacity 0.15s ease;
+}
+.btn-primary:hover {
+  opacity: 0.9;
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

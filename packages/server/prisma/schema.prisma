@@ -1,0 +1,614 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Identity ----------
+
+model User {
+  id           String   @id @default(uuid())
+  email        String?  @unique
+  studentId    String?  @unique
+  passwordHash String
+  mustChangePassword Boolean @default(true)
+  role         String // "student" | "teacher"
+  firstName    String
+  lastName     String
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  studentProfile StudentProfile?
+  teacherProfile TeacherProfile?
+
+  enrollments        Enrollment[]
+  coursesTaught       Course[]                  @relation("CourseTeacher")
+  advisedSections     Section[]                 @relation("SectionAdviser")
+  lessonProgress      LessonProgress[]
+  discussionThreads   DiscussionThread[]
+  discussionReplies   DiscussionReply[]
+  discussionLikes     DiscussionLike[]
+  quizAttempts        QuizAttempt[]
+  assignmentSubmissions AssignmentSubmission[]   @relation("SubmissionStudent")
+  gradedSubmissions   AssignmentSubmission[]     @relation("SubmissionGrader")
+  gradebookEntries    GradebookEntry[]
+  attendanceRecords   AttendanceRecord[]         @relation("AttendanceStudent")
+  attendanceRecordedBy AttendanceRecord[]        @relation("AttendanceRecorder")
+  interventionProfile InterventionProfile?
+  interventionPlansAsStudent InterventionPlan[]  @relation("PlanStudent")
+  interventionPlansAsTeacher InterventionPlan[]  @relation("PlanTeacher")
+  interventionPrograms InterventionProgram[]     @relation("ProgramResponsible")
+  timelineEventsCreated InterventionTimelineEvent[]
+  xpLogs              XpLog[]
+  studentLevel        StudentLevel?
+  studentBadges       StudentBadge[]
+  certificates        Certificate[]
+  announcements       Announcement[]
+  announcementComments AnnouncementComment[]
+  conversationParticipants ConversationParticipant[]
+  messagesSent        Message[]
+  fileAssets          FileAsset[]
+  lessonResourcesUploaded LessonResource[]
+  dllDocumentsUploaded DllDocument[]
+}
+
+model StudentProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  lrn            String?
+  middleName     String?
+  gradeLevel     String?
+  strand         String?
+  sectionId      String?
+  section        Section? @relation(fields: [sectionId], references: [id])
+  schoolYear     String?
+  semester       String?
+  gender         String?
+  birthday       DateTime?
+  address        String?
+  contactNumber  String?
+  parentName     String?
+  parentContact  String?
+}
+
+model TeacherProfile {
+  id         String  @id @default(uuid())
+  userId     String  @unique
+  user       User    @relation(fields: [userId], references: [id])
+  employeeId String?
+  department String?
+}
+
+model Section {
+  id          String  @id @default(uuid())
+  name        String
+  gradeLevel  String
+  strand      String?
+  adviserId   String?
+  adviser     User?   @relation("SectionAdviser", fields: [adviserId], references: [id])
+  students    StudentProfile[]
+}
+
+// ---------- Courses / Content ----------
+
+model Course {
+  id             String   @id @default(uuid())
+  title          String
+  subject        String
+  teacherId      String
+  teacher        User     @relation("CourseTeacher", fields: [teacherId], references: [id])
+  sectionId      String?
+  term           String?
+  coverImagePath String?
+  createdAt      DateTime @default(now())
+
+  enrollments  Enrollment[]
+  modules      Module[]
+  assignments  Assignment[]
+  quizzes      Quiz[]
+  discussionThreads DiscussionThread[]
+  gradebookEntries GradebookEntry[]
+  attendanceRecords AttendanceRecord[]
+  announcements Announcement[]
+  gradingSettings GradingSettings?
+  certificates Certificate[]
+  dllDocuments DllDocument[]
+}
+
+model DllDocument {
+  id            String    @id @default(uuid())
+  courseId      String
+  course        Course    @relation(fields: [courseId], references: [id])
+  title         String
+  program       String    @default("ILAW")
+  gradeLevel    String?
+  learningArea  String?
+  quarter       String?
+  teachingDates String?
+  fileAssetId   String
+  fileAsset     FileAsset @relation(fields: [fileAssetId], references: [id])
+  uploadedById  String
+  uploadedBy    User      @relation(fields: [uploadedById], references: [id])
+  createdAt     DateTime  @default(now())
+}
+
+model Enrollment {
+  id              String @id @default(uuid())
+  courseId        String
+  course          Course @relation(fields: [courseId], references: [id])
+  studentId       String
+  student         User   @relation(fields: [studentId], references: [id])
+  progressPercent Float  @default(0)
+
+  @@unique([courseId, studentId])
+}
+
+model Module {
+  id         String   @id @default(uuid())
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id])
+  title      String
+  orderIndex Int      @default(0)
+  status     String   @default("draft")
+  lessons    Lesson[]
+}
+
+model Lesson {
+  id                String   @id @default(uuid())
+  moduleId          String
+  module            Module   @relation(fields: [moduleId], references: [id])
+  title             String
+  orderIndex        Int      @default(0)
+  status            String   @default("draft")
+  learningCompetency String?
+  objectives        String?
+  videoUrl          String?
+  examples          String?
+  lessonNotes       String?
+  assessment        String?
+  reflectionPrompt  String?
+  references        String?
+
+  resources LessonResource[]
+  progress  LessonProgress[]
+  quizzes   Quiz[]
+  discussionThreads DiscussionThread[]
+}
+
+model LessonResource {
+  id           String   @id @default(uuid())
+  lessonId     String
+  lesson       Lesson   @relation(fields: [lessonId], references: [id])
+  type         String
+  title        String
+  fileAssetId  String?
+  fileAsset    FileAsset? @relation(fields: [fileAssetId], references: [id])
+  uploadedById String
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model LessonProgress {
+  id            String    @id @default(uuid())
+  lessonId      String
+  lesson        Lesson    @relation(fields: [lessonId], references: [id])
+  studentId     String
+  student       User      @relation(fields: [studentId], references: [id])
+  status        String    @default("locked")
+  bookmarked    Boolean   @default(false)
+  studentNotes  String?
+  completedAt   DateTime?
+
+  @@unique([lessonId, studentId])
+}
+
+// ---------- Discussion ----------
+
+model DiscussionThread {
+  id        String   @id @default(uuid())
+  courseId  String?
+  course    Course?  @relation(fields: [courseId], references: [id])
+  lessonId  String?
+  lesson    Lesson?  @relation(fields: [lessonId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  title     String
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  replies DiscussionReply[]
+  likes   DiscussionLike[]
+}
+
+model DiscussionReply {
+  id        String   @id @default(uuid())
+  threadId  String
+  thread    DiscussionThread @relation(fields: [threadId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+  likes     DiscussionLike[]
+}
+
+model DiscussionLike {
+  id       String @id @default(uuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  threadId String?
+  thread   DiscussionThread? @relation(fields: [threadId], references: [id])
+  replyId  String?
+  reply    DiscussionReply?  @relation(fields: [replyId], references: [id])
+}
+
+// ---------- Assessments ----------
+
+model Quiz {
+  id            String   @id @default(uuid())
+  courseId      String
+  course        Course   @relation(fields: [courseId], references: [id])
+  lessonId      String?
+  lesson        Lesson?  @relation(fields: [lessonId], references: [id])
+  title         String
+  timerMinutes  Int      @default(30)
+  passingScore  Int      @default(75)
+  maxAttempts   Int      @default(1)
+  shuffle       Boolean  @default(false)
+  status        String   @default("draft")
+
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+}
+
+model QuizQuestion {
+  id            String  @id @default(uuid())
+  quizId        String
+  quiz          Quiz    @relation(fields: [quizId], references: [id])
+  orderIndex    Int     @default(0)
+  type          String
+  prompt        String
+  options       String?
+  correctAnswer String?
+  points        Int     @default(1)
+  imageUrl      String?
+  matchingPairs String?
+
+  responses QuizResponse[]
+}
+
+model QuizAttempt {
+  id            String    @id @default(uuid())
+  quizId        String
+  quiz          Quiz      @relation(fields: [quizId], references: [id])
+  studentId     String
+  student       User      @relation(fields: [studentId], references: [id])
+  attemptNumber Int       @default(1)
+  startedAt     DateTime  @default(now())
+  submittedAt   DateTime?
+  score         Float?
+  maxScore      Float?
+  status        String    @default("in_progress")
+
+  responses QuizResponse[]
+}
+
+model QuizResponse {
+  id               String       @id @default(uuid())
+  attemptId        String
+  attempt          QuizAttempt  @relation(fields: [attemptId], references: [id])
+  questionId       String
+  question         QuizQuestion @relation(fields: [questionId], references: [id])
+  response         String?
+  isCorrect        Boolean?
+  pointsAwarded    Float?
+  needsManualReview Boolean     @default(false)
+  graderFeedback   String?
+
+  @@unique([attemptId, questionId])
+}
+
+model Assignment {
+  id               String   @id @default(uuid())
+  courseId         String
+  course           Course   @relation(fields: [courseId], references: [id])
+  title            String
+  instructions     String?
+  dueDate          DateTime?
+  pointsPossible   Int      @default(100)
+  rubricFileAssetId String?
+  rubricFileAsset  FileAsset? @relation(fields: [rubricFileAssetId], references: [id])
+  status           String   @default("open")
+
+  submissions AssignmentSubmission[]
+}
+
+model AssignmentSubmission {
+  id            String    @id @default(uuid())
+  assignmentId  String
+  assignment    Assignment @relation(fields: [assignmentId], references: [id])
+  studentId     String
+  student       User      @relation("SubmissionStudent", fields: [studentId], references: [id])
+  submittedAt   DateTime?
+  fileAssetId   String?
+  fileAsset     FileAsset? @relation(fields: [fileAssetId], references: [id])
+  note          String?
+  status        String    @default("not_submitted")
+  score         Float?
+  feedback      String?
+  gradedById    String?
+  gradedBy      User?     @relation("SubmissionGrader", fields: [gradedById], references: [id])
+  gradedAt      DateTime?
+
+  @@unique([assignmentId, studentId])
+}
+
+// ---------- Gradebook / Attendance ----------
+
+model GradebookEntry {
+  id            String   @id @default(uuid())
+  studentId     String
+  student       User     @relation(fields: [studentId], references: [id])
+  courseId      String
+  course        Course   @relation(fields: [courseId], references: [id])
+  category      String
+  referenceId   String?
+  score         Float
+  maxScore      Float
+  quarter       String
+  remarks       String?
+  createdAt     DateTime @default(now())
+}
+
+model GradingSettings {
+  id                String  @id @default(uuid())
+  courseId          String? @unique
+  course            Course? @relation(fields: [courseId], references: [id])
+  passingThreshold  Int     @default(75)
+  categoryWeights   String?
+}
+
+model AttendanceRecord {
+  id           String   @id @default(uuid())
+  studentId    String
+  student      User     @relation("AttendanceStudent", fields: [studentId], references: [id])
+  courseId     String
+  course       Course   @relation(fields: [courseId], references: [id])
+  date         DateTime
+  status       String
+  recordedById String?
+  recordedBy   User?    @relation("AttendanceRecorder", fields: [recordedById], references: [id])
+  remarks      String?
+
+  @@unique([studentId, courseId, date])
+}
+
+// ---------- Interventions (MTSS) ----------
+
+model InterventionProfile {
+  id                  String   @id @default(uuid())
+  studentId           String   @unique
+  student             User     @relation(fields: [studentId], references: [id])
+  riskTier            String   @default("satisfactory")
+  interventionStatus  String   @default("no_intervention_required")
+  updatedAt           DateTime @updatedAt
+}
+
+model InterventionPlan {
+  id                 String    @id @default(uuid())
+  studentId          String
+  student            User      @relation("PlanStudent", fields: [studentId], references: [id])
+  subject            String
+  teacherId          String
+  teacher            User      @relation("PlanTeacher", fields: [teacherId], references: [id])
+  competency         String?
+  difficulty         String?
+  rootCauses         String?
+  strategies         String?
+  schedule           String?
+  targetScore        Float?
+  expectedCompletion DateTime?
+  remarks            String?
+  reflection         String?
+  finalEvaluation    String?
+  status             String    @default("active")
+  createdAt          DateTime  @default(now())
+
+  activities      InterventionActivity[]
+  progressMetrics InterventionProgressMetric[]
+  timelineEvents  InterventionTimelineEvent[]
+}
+
+model InterventionActivity {
+  id                String    @id @default(uuid())
+  planId            String
+  plan              InterventionPlan @relation(fields: [planId], references: [id])
+  title             String
+  instructions      String?
+  materials         String?
+  deadline          DateTime?
+  status            String    @default("assigned")
+  teacherFeedback   String?
+  studentReflection String?
+  completedAt       DateTime?
+}
+
+model InterventionProgressMetric {
+  id         String   @id @default(uuid())
+  planId     String
+  plan       InterventionPlan @relation(fields: [planId], references: [id])
+  metricDate DateTime
+  metricType String
+  value      Float
+}
+
+model InterventionTimelineEvent {
+  id          String   @id @default(uuid())
+  planId      String
+  plan        InterventionPlan @relation(fields: [planId], references: [id])
+  eventType   String
+  description String
+  eventDate   DateTime @default(now())
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+}
+
+model InterventionProgram {
+  id                  String    @id @default(uuid())
+  name                String
+  description         String?
+  subject              String?
+  gradeLevel           String?
+  competency           String?
+  targetLearners       String?
+  startDate            DateTime?
+  endDate              DateTime?
+  expectedOutcome      String?
+  successIndicators    String?
+  monitoringFrequency  String?
+  resourcesNeeded      String?
+  personResponsibleId  String?
+  personResponsible    User?     @relation("ProgramResponsible", fields: [personResponsibleId], references: [id])
+  status               String    @default("draft")
+  tier                 String    @default("tier1")
+}
+
+// ---------- Gamification ----------
+
+model XpLog {
+  id         String   @id @default(uuid())
+  studentId  String
+  student    User     @relation(fields: [studentId], references: [id])
+  sourceType String
+  sourceId   String?
+  xpAmount   Int
+  createdAt  DateTime @default(now())
+}
+
+model StudentLevel {
+  id          String @id @default(uuid())
+  studentId   String @unique
+  student     User   @relation(fields: [studentId], references: [id])
+  currentLevel Int   @default(1)
+  currentXp   Int    @default(0)
+}
+
+model Badge {
+  id          String @id @default(uuid())
+  name        String
+  description String?
+  icon        String?
+  criteria    String?
+
+  studentBadges StudentBadge[]
+}
+
+model StudentBadge {
+  id        String   @id @default(uuid())
+  studentId String
+  student   User     @relation(fields: [studentId], references: [id])
+  badgeId   String
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+  earnedAt  DateTime @default(now())
+
+  @@unique([studentId, badgeId])
+}
+
+// ---------- Certificates ----------
+
+model Certificate {
+  id          String   @id @default(uuid())
+  studentId   String
+  student     User     @relation(fields: [studentId], references: [id])
+  type        String
+  courseId    String?
+  course      Course?  @relation(fields: [courseId], references: [id])
+  earnedAt    DateTime @default(now())
+  criteriaMet String?
+}
+
+// ---------- Announcements ----------
+
+model Announcement {
+  id                    String   @id @default(uuid())
+  authorId              String
+  author                User     @relation(fields: [authorId], references: [id])
+  courseId              String?
+  course                Course?  @relation(fields: [courseId], references: [id])
+  title                 String
+  body                  String
+  attachmentFileAssetId String?
+  attachmentFileAsset   FileAsset? @relation(fields: [attachmentFileAssetId], references: [id])
+  createdAt             DateTime @default(now())
+
+  comments AnnouncementComment[]
+}
+
+model AnnouncementComment {
+  id             String   @id @default(uuid())
+  announcementId String
+  announcement   Announcement @relation(fields: [announcementId], references: [id])
+  authorId       String
+  author         User     @relation(fields: [authorId], references: [id])
+  body           String
+  createdAt      DateTime @default(now())
+}
+
+// ---------- Messaging ----------
+
+model Conversation {
+  id        String   @id @default(uuid())
+  isGroup   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id                 String   @id @default(uuid())
+  conversationId     String
+  conversation       Conversation @relation(fields: [conversationId], references: [id])
+  userId             String
+  user               User     @relation(fields: [userId], references: [id])
+  lastReadMessageId  String?
+
+  @@unique([conversationId, userId])
+}
+
+model Message {
+  id                    String   @id @default(uuid())
+  conversationId        String
+  conversation          Conversation @relation(fields: [conversationId], references: [id])
+  senderId              String
+  sender                User     @relation(fields: [senderId], references: [id])
+  body                  String
+  attachmentFileAssetId String?
+  attachmentFileAsset   FileAsset? @relation(fields: [attachmentFileAssetId], references: [id])
+  createdAt             DateTime @default(now())
+}
+
+// ---------- Files ----------
+
+model FileAsset {
+  id           String   @id @default(uuid())
+  ownerId      String
+  owner        User     @relation(fields: [ownerId], references: [id])
+  category     String
+  originalName String
+  storagePath  String
+  mimeType     String
+  size         Int
+  createdAt    DateTime @default(now())
+
+  lessonResources LessonResource[]
+  rubricFor       Assignment[]
+  submissions     AssignmentSubmission[]
+  announcements   Announcement[]
+  messages        Message[]
+  dllDocuments    DllDocument[]
+}
