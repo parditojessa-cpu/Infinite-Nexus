@@ -3,7 +3,7 @@ services:
     name: finite-nexus
     runtime: node
     plan: free
-    buildCommand: npm install --include=dev && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm run start:prod --workspace=packages/server
     envVars:
       - key: NODE_ENV
