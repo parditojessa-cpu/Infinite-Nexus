@@ -3,6 +3,7 @@ import { AuthBootstrap } from "./AuthBootstrap";
 import { RequireAuth } from "./RequireAuth";
 import { AppShell } from "../layout/AppShell";
 import { LoginPage } from "../features/auth/LoginPage";
+import { TeacherSignupPage } from "../features/auth/TeacherSignupPage";
 import { SetPasswordPage } from "../features/auth/SetPasswordPage";
 import { DashboardPage } from "../features/dashboard/DashboardPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
@@ -22,6 +23,7 @@ import { CertificatesPage } from "../features/certificates/CertificatesPage";
 import { AnnouncementsPage } from "../features/announcements/AnnouncementsPage";
 import { DiscussionBoardPage } from "../features/discussions/DiscussionBoardPage";
 import { MessagesPage } from "../features/messages/MessagesPage";
+import { WhiteboardPage } from "../features/whiteboard/WhiteboardPage";
 
 function studentRoutes() {
   return [
@@ -35,6 +37,8 @@ function studentRoutes() {
     { path: "quizzes/:quizId", element: <QuizPage /> },
     { path: "quizzes/attempts/:attemptId/review", element: <QuizReviewPage /> },
     { path: "gradebook", element: <GradebookPage /> },
+    { path: "whiteboard", element: <WhiteboardPage /> },
+    { path: "whiteboard/:sessionId", element: <WhiteboardPage /> },
     { path: "progress", element: <GamificationPage /> },
     { path: "analytics", element: <AnalyticsPage /> },
     { path: "attendance", element: <AttendancePage /> },
@@ -66,6 +70,7 @@ export const router = createBrowserRouter([
     element: <AuthBootstrap />,
     children: [
       { path: "/login", element: <LoginPage /> },
+      { path: "/teacher-signup", element: <TeacherSignupPage /> },
       { path: "/", element: <Navigate to="/login" replace /> },
       {
         element: <RequireAuth />,

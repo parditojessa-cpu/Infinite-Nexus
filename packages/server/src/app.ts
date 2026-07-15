@@ -23,6 +23,8 @@ import { announcementsRouter } from "./modules/announcements/routes.js";
 import { messagesRouter } from "./modules/messages/routes.js";
 import { dllLibraryRouter } from "./modules/dllLibrary/routes.js";
 import { studentsRouter } from "./modules/students/routes.js";
+import { whiteboardRouter } from "./modules/whiteboard/routes.js";
+import { activitySheetsRouter } from "./modules/activitySheets/routes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -66,6 +68,8 @@ export function createApp() {
   app.use("/api/messages", messagesRouter);
   app.use("/api/dll-documents", dllLibraryRouter);
   app.use("/api/students", studentsRouter);
+  app.use("/api/whiteboard", whiteboardRouter);
+  app.use("/api/activity-sheets", activitySheetsRouter);
 
   if (fs.existsSync(clientDist)) {
     app.use(express.static(clientDist));

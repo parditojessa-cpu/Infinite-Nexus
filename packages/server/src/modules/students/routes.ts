@@ -37,7 +37,6 @@ studentsRouter.post(
       warnings: result.warnings,
       students: result.students.map((s) => ({
         ...s,
-        initialPassword: passwordFromBirthday(s.birthday),
         alreadyExists: existingLrns.has(s.lrn),
       })),
     });
@@ -95,6 +94,7 @@ studentsRouter.post(
         data: {
           studentId: s.lrn,
           passwordHash,
+          mustChangePassword: false,
           role: "student",
           firstName: s.firstName,
           lastName: s.lastName,

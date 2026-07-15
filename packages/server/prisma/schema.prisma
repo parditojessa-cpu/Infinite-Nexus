@@ -54,6 +54,8 @@ model User {
   fileAssets          FileAsset[]
   lessonResourcesUploaded LessonResource[]
   dllDocumentsUploaded DllDocument[]
+  whiteboardSessions  WhiteboardSession[]
+  activitySheetsGenerated ActivitySheet[]
 }
 
 model StudentProfile {
@@ -82,6 +84,14 @@ model TeacherProfile {
   user       User    @relation(fields: [userId], references: [id])
   employeeId String?
   department String?
+}
+
+model TeacherSignupCode {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Section {
@@ -118,6 +128,7 @@ model Course {
   gradingSettings GradingSettings?
   certificates Certificate[]
   dllDocuments DllDocument[]
+  activitySheets ActivitySheet[]
 }
 
 model DllDocument {
@@ -611,4 +622,47 @@ model FileAsset {
   announcements   Announcement[]
   messages        Message[]
   dllDocuments    DllDocument[]
+  activitySheets  ActivitySheet[]
+}
+
+// ---------- AI Whiteboard ----------
+
+model WhiteboardSession {
+  id        String   @id @default(uuid())
+  studentId String
+  student   User     @relation(fields: [studentId], references: [id])
+  title     String   @default("Untitled problem")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages WhiteboardMessage[]
+}
+
+model WhiteboardMessage {
+  id        String            @id @default(uuid())
+  sessionId String
+  session   WhiteboardSession @relation(fields: [sessionId], references: [id])
+  role      String // "student" | "ai"
+  content   String
+  createdAt DateTime          @default(now())
+}
+
+// ---------- AI Activity Sheet Generator ----------
+
+model ActivitySheet {
+  id           String    @id @default(uuid())
+  courseId     String
+  course       Course    @relation(fields: [courseId], references: [id])
+  teacherId    String
+  teacher      User      @relation(fields: [teacherId], references: [id])
+  title        String
+  topic        String
+  gradeLevel   String?
+  learningArea String?
+  competency   String?
+  numItems     Int       @default(10)
+  difficulty   String    @default("average")
+  fileAssetId  String
+  fileAsset    FileAsset @relation(fields: [fileAssetId], references: [id])
+  createdAt    DateTime  @default(now())
 }

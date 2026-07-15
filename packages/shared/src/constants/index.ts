@@ -2,6 +2,8 @@
 
 export const DEFAULT_PASSING_THRESHOLD = 75;
 
+export const TEACHER_SIGNUP_EMAIL_DOMAIN = "finitenexus.edu";
+
 export const XP_RULES = {
   complete_lesson: 10,
   complete_quiz: 25,

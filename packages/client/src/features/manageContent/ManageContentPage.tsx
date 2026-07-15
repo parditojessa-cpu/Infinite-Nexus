@@ -7,8 +7,9 @@ import { useUiStore } from "../../lib/uiStore";
 import { useCreateLesson, useCreateModule, useToggleModuleStatus, useUploadResource } from "./api";
 import { DllLibraryPanel } from "../dllLibrary/DllLibraryPanel";
 import { StudentImportPanel } from "../studentImport/StudentImportPanel";
+import { ActivitySheetGeneratorPanel } from "../activitySheets/ActivitySheetGeneratorPanel";
 
-const TABS = ["Lesson Materials", "DLL Library", "Import Students (SF1)"] as const;
+const TABS = ["Lesson Materials", "DLL Library", "AI Activity Generator", "Import Students (SF1)"] as const;
 
 export function ManageContentPage() {
   const { courseId } = useParams();
@@ -73,6 +74,7 @@ export function ManageContentPage() {
       </div>
 
       {tab === "DLL Library" && <DllLibraryPanel courseId={courseId} />}
+      {tab === "AI Activity Generator" && <ActivitySheetGeneratorPanel courseId={courseId} />}
       {tab === "Import Students (SF1)" && <StudentImportPanel courseId={courseId} />}
 
       {tab === "Lesson Materials" && (

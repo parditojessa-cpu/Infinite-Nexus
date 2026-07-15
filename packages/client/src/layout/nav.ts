@@ -10,6 +10,7 @@ export const STUDENT_NAV: NavItem[] = [
   { label: "My Courses", path: "/student/courses", icon: "📚" },
   { label: "Assignments", path: "/student/assignments", icon: "📝" },
   { label: "Gradebook", path: "/student/gradebook", icon: "📊" },
+  { label: "AI Whiteboard", path: "/student/whiteboard", icon: "🧠" },
   { label: "My Progress", path: "/student/progress", icon: "🏆" },
   { label: "Progress Dashboard", path: "/student/analytics", icon: "📈" },
   { label: "Attendance", path: "/student/attendance", icon: "🗓️" },

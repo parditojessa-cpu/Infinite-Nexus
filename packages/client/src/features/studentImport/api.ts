@@ -12,7 +12,6 @@ export interface Sf1StudentRow {
   age: number | null;
   religion: string | null;
   lrnValid: boolean;
-  initialPassword: string;
   alreadyExists: boolean;
 }
 

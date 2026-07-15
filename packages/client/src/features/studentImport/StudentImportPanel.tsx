@@ -33,8 +33,8 @@ export function StudentImportPanel({ courseId }: { courseId: string }) {
     <div className="card">
       <h3 className="font-heading font-semibold mb-1">📋 Import Students from School Form 1</h3>
       <p className="text-xs text-text-secondary mb-4">
-        Upload a DepEd School Form 1 (School Register) PDF. Each learner's LRN becomes their login ID; their
-        birthdate (MMDDYYYY) becomes their initial password.
+        Upload a DepEd School Form 1 (School Register) PDF. Each learner's LRN becomes their login ID — students log
+        in with their LRN only, no password needed.
       </p>
 
       {!rows && (
@@ -79,7 +79,6 @@ export function StudentImportPanel({ courseId }: { courseId: string }) {
                   <th className="py-2 pr-2">Middle</th>
                   <th className="py-2 pr-2">Sex</th>
                   <th className="py-2 pr-2">Birthdate</th>
-                  <th className="py-2 pr-2">Initial Password</th>
                   <th className="py-2">Status</th>
                 </tr>
               </thead>
@@ -114,7 +113,6 @@ export function StudentImportPanel({ courseId }: { courseId: string }) {
                     <td className="py-1.5 pr-2">{r.middleName ?? "—"}</td>
                     <td className="py-1.5 pr-2">{r.sex}</td>
                     <td className="py-1.5 pr-2">{r.birthday ?? "—"}</td>
-                    <td className="py-1.5 pr-2 font-mono">{r.initialPassword}</td>
                     <td className="py-1.5">
                       {r.alreadyExists ? <span className="text-warning">Already exists</span> : <span className="text-success">New</span>}
                     </td>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { loginSchema, type LoginInput } from "@finite-nexus/shared";
 import { apiFetch } from "../../lib/api";
 import { useAuthStore } from "../../lib/authStore";
@@ -89,36 +89,53 @@ export function LoginPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium">{role === "student" ? "Student ID or Email" : "Email"}</label>
+              <label className="text-sm font-medium">{role === "student" ? "LRN" : "Email"}</label>
               <input
                 {...register("identifier")}
                 className="rounded-control border px-3 py-2.5 text-sm"
                 style={{ borderColor: "var(--color-border-strong)" }}
-                placeholder={role === "student" ? "e.g. 2026-00123" : "you@finitenexus.edu"}
+                placeholder={role === "student" ? "e.g. 123456789012" : "you@finitenexus.edu"}
               />
               {errors.identifier && <span className="text-danger text-xs">{errors.identifier.message}</span>}
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium">Password</label>
-              <input
-                type="password"
-                {...register("password")}
-                className="rounded-control border px-3 py-2.5 text-sm"
-                style={{ borderColor: "var(--color-border-strong)" }}
-                placeholder="••••••••"
-              />
-              {errors.password && <span className="text-danger text-xs">{errors.password.message}</span>}
-            </div>
+            {role === "teacher" && (
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Password</label>
+                <input
+                  type="password"
+                  {...register("password")}
+                  className="rounded-control border px-3 py-2.5 text-sm"
+                  style={{ borderColor: "var(--color-border-strong)" }}
+                  placeholder="••••••••"
+                />
+                {errors.password && <span className="text-danger text-xs">{errors.password.message}</span>}
+              </div>
+            )}
 
-            <button type="button" className="text-sm text-primary self-start">
-              Forgot password?
-            </button>
+            {role === "student" && (
+              <p className="text-xs text-text-secondary">Enter your LRN — no password needed.</p>
+            )}
+
+            {role === "teacher" && (
+              <button type="button" className="text-sm text-primary self-start">
+                Forgot password?
+              </button>
+            )}
 
             <button type="submit" disabled={isSubmitting} className="btn-primary w-full">
               {isSubmitting ? "Signing in…" : "Sign in"}
             </button>
           </form>
+
+          {role === "teacher" && (
+            <p className="text-sm text-center">
+              New here?{" "}
+              <Link to="/teacher-signup" className="text-primary font-medium">
+                Create a teacher account
+              </Link>
+            </p>
+          )}
 
           <p className="text-xs text-text-secondary">
             Demo: teacher@finitenexus.edu / 2026-00123 &middot; password123
